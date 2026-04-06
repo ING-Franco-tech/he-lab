@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HE-Lab — Plataforma Multiescala de Fragilización por Hidrógeno</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- ══════════ HEADER ══════════ -->
+  <header class="header">
+    <div class="header-brand">
+      <div class="logo">
+        <span class="logo-symbol">H₂</span>
+      </div>
+      <div>
+        <h1 class="header-title">HE-Lab</h1>
+        <p class="header-sub">Plataforma multiescala de fragilización por hidrógeno</p>
+      </div>
+    </div>
+    <div class="header-meta">
+      <span class="badge badge-green" id="status-badge">Offline — Sin API</span>
+      <span class="header-version">v0.1.0</span>
+    </div>
+  </header>
+
+  <!-- ══════════ NAVIGATION TABS ══════════ -->
+  <nav class="tabs">
+    <button class="tab active" data-target="tab-composition" onclick="switchTab(this)">
+      <span class="tab-num">01</span> Composición
+    </button>
+    <button class="tab" data-target="tab-microstructure" onclick="switchTab(this)">
+      <span class="tab-num">02</span> Microestructura IA
+    </button>
+    <button class="tab" data-target="tab-simulation" onclick="switchTab(this)">
+      <span class="tab-num">03</span> Simulación
+    </button>
+    <button class="tab" data-target="tab-ml" onclick="switchTab(this)">
+      <span class="tab-num">04</span> ML Predictivo
+    </button>
+    <button class="tab" data-target="tab-normative" onclick="switchTab(this)">
+      <span class="tab-num">05</span> Normativa
+    </button>
+    <button class="tab" data-target="tab-report" onclick="switchTab(this)">
+      <span class="tab-num">06</span> Reporte
+    </button>
+    <button class="tab" data-target="tab-chatbot" onclick="switchTab(this)">
+      <span class="tab-num">07</span> RINCÓN IA
+    </button>
+  </nav>
+
+  <!-- ══════════ TAB PANELS ══════════ -->
+  <main class="main">
+
+    <!-- ── TAB 1: COMPOSICIÓN ── -->
+    <section class="panel active" id="tab-composition">
+      <div class="panel-header">
+        <h2>Análisis composicional</h2>
+        <p class="panel-desc">Ingresa la composición química del acero o selecciona un grado de la base de datos.</p>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">Selección rápida</h3>
+        <div class="select-group">
+          <label>Familia de acero</label>
+          <select id="steel-family" onchange="filterSteels()">
+            <option value="">— Seleccionar —</option>
+            <option value="carbon">Aceros al carbono (AISI 10xx)</option>
+            <option value="low-alloy">Baja aleación (AISI 41xx, 43xx)</option>
+            <option value="stainless-austenitic">Inoxidable austenítico (304, 316, 321)</option>
+            <option value="stainless-ferritic">Inoxidable ferrítico (430, 446)</option>
+            <option value="stainless-duplex">Inoxidable dúplex (2205, 2507)</option>
+            <option value="stainless-martensitic">Inoxidable martensítico (410, 420)</option>
+            <option value="pipeline">Aceros de tubería (API 5L)</option>
+            <option value="hsla">HSLA / Microaleados</option>
+          </select>
+        </div>
+        <div class="select-group">
+          <label>Grado específico</label>
+          <select id="steel-grade" onchange="loadComposition()">
+            <option value="">— Primero selecciona familia —</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">Composición química (% peso)</h3>
+        <div class="comp-grid" id="comp-grid">
+          <!-- Generado por JS -->
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-primary" onclick="analyzeComposition()">Analizar composición</button>
+          <button class="btn btn-ghost" onclick="clearComposition()">Limpiar</button>
+        </div>
+      </div>
+
+      <div class="card hidden" id="comp-results">
+        <h3 class="card-title">Resultados del análisis</h3>
+        <div id="comp-output"></div>
+      </div>
+    </section>
+
+    <!-- ── TAB 2: MICROESTRUCTURA IA ── -->
+    <section class="panel" id="tab-microstructure">
+      <div class="panel-header">
+        <h2>Análisis de microestructura con IA</h2>
+        <p class="panel-desc">Sube una micrografía metalográfica y la IA identificará fases, estimará proporciones y evaluará susceptibilidad a HE.</p>
+      </div>
+
+      <div class="card">
+        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()"
+             ondragover="event.preventDefault(); this.classList.add('drag-over')"
+             ondragleave="this.classList.remove('drag-over')"
+             ondrop="handleDrop(event)">
+          <div class="upload-icon">⬆</div>
+          <p class="upload-text">Arrastra una micrografía aquí o haz clic para seleccionar</p>
+          <p class="upload-hint">PNG, JPG — SEM, óptica, BSE</p>
+          <input type="file" id="file-input" accept="image/*" hidden onchange="handleFileSelect(event)">
+        </div>
+        <img id="preview-img" class="preview-img hidden" alt="Preview">
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">Contexto adicional (opcional)</h3>
+        <div class="input-row">
+          <div class="input-group">
+            <label>Ataque químico</label>
+            <select id="etchant">
+              <option value="">No especificado</option>
+              <option value="nital2">Nital 2%</option>
+              <option value="nital5">Nital 5%</option>
+              <option value="picral">Picral</option>
+              <option value="vilella">Vilella</option>
+              <option value="kalling">Kalling</option>
+              <option value="electrolytic-oxalic">Oxálico electrolítico</option>
+              <option value="marble">Marble</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Aumento</label>
+            <select id="magnification">
+              <option value="">No especificado</option>
+              <option value="50x">50x</option>
+              <option value="100x">100x</option>
+              <option value="200x">200x</option>
+              <option value="500x">500x</option>
+              <option value="1000x">1000x</option>
+              <option value="sem-1000x">SEM 1000x</option>
+              <option value="sem-5000x">SEM 5000x</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Tipo de microscopía</label>
+            <select id="microscopy-type">
+              <option value="">No especificado</option>
+              <option value="optical">Óptica (campo claro)</option>
+              <option value="darkfield">Óptica (campo oscuro)</option>
+              <option value="sem-se">SEM — Electrones secundarios</option>
+              <option value="sem-bse">SEM — Electrones retrodispersados</option>
+              <option value="ebsd">EBSD</option>
+            </select>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-primary" onclick="analyzeImage()" id="btn-analyze-img">
+            Analizar con IA
+          </button>
+        </div>
+      </div>
+
+      <div class="card hidden" id="vision-results">
+        <h3 class="card-title">Análisis de la IA</h3>
+        <div id="vision-output" class="ai-output"></div>
+      </div>
+    </section>
+
+    <!-- ── TAB 3: SIMULACIÓN ── -->
+    <section class="panel" id="tab-simulation">
+      <div class="panel-header">
+        <h2>Simulación de difusión de hidrógeno</h2>
+        <p class="panel-desc">Solver McNabb-Foster con criterio HEDE. Calcula la distribución de H en red y trampas en función del tiempo.</p>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">Parámetros de difusión</h3>
+        <div class="input-row">
+          <div class="input-group">
+            <label>$D_L$ — Difusividad en red (cm²/s)</label>
+            <input type="number" id="sim-DL" value="1.0e-4" step="any">
+          </div>
+          <div class="input-group">
+            <label>$C_0$ — Concentración inicial (wt ppm)</label>
+            <input type="number" id="sim-C0" value="1.0" step="any">
+          </div>
+          <div class="input-group">
+            <label>$T$ — Temperatura (K)</label>
+            <input type="number" id="sim-T" value="300" step="1">
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label>$E_{trap}$ — Energía de trampa (eV)</label>
+            <input type="number" id="sim-Etrap" value="0.3" step="0.01">
+          </div>
+          <div class="input-group">
+            <label>$N_T$ — Densidad de trampas (sites/cm³)</label>
+            <input type="number" id="sim-NT" value="1.0e20" step="any">
+          </div>
+          <div class="input-group">
+            <label>$L$ — Longitud del dominio (mm)</label>
+            <input type="number" id="sim-L" value="10" step="0.1">
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label>Nodos espaciales</label>
+            <input type="number" id="sim-nodes" value="100" step="10" min="20" max="500">
+          </div>
+          <div class="input-group">
+            <label>Tiempo total (s)</label>
+            <input type="number" id="sim-time" value="3600" step="100">
+          </div>
+          <div class="input-group">
+            <label>$\sigma_h$ — Tensión hidrostática (MPa)</label>
+            <input type="number" id="sim-stress" value="0" step="10">
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-primary" onclick="runSimulation()">Ejecutar simulación</button>
+          <button class="btn btn-ghost" onclick="resetSimParams()">Valores por defecto</button>
+        </div>
+      </div>
+
+      <div class="card hidden" id="sim-results">
+        <h3 class="card-title">Resultados de la simulación</h3>
+        <div class="chart-container">
+          <canvas id="chart-diffusion"></canvas>
+        </div>
+        <div class="sim-metrics" id="sim-metrics"></div>
+      </div>
+    </section>
+
+    <!-- ── TAB 4: ML PREDICTIVO ── -->
+    <section class="panel" id="tab-ml">
+      <div class="panel-header">
+        <h2>Predicción ML de fragilización</h2>
+        <p class="panel-desc">Modelo Random Forest / XGBoost entrenado con datos de literatura para predecir índice de fragilización, $K_{IH}$ y $da/dN$.</p>
+      </div>
+
+      <div class="card">
+        <div class="status-box status-warning">
+          <strong>Módulo en desarrollo.</strong> El modelo ML requiere compilar el dataset de papers y entrenar en Colab.
+          Cuando el modelo ONNX esté listo, se cargará aquí para inferencia en el navegador.
+        </div>
+      </div>
+    </section>
+
+    <!-- ── TAB 5: NORMATIVA ── -->
+    <section class="panel" id="tab-normative">
+      <div class="panel-header">
+        <h2>Evaluador normativo ASME B31.12</h2>
+        <p class="panel-desc">Evalúa si un acero cumple los requisitos para servicio con hidrógeno según ASME B31.12, API 5L y normativa de ensayos.</p>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">Parámetros del componente</h3>
+        <div class="input-row">
+          <div class="input-group">
+            <label>Diámetro exterior (mm)</label>
+            <input type="number" id="norm-OD" value="406" step="1">
+          </div>
+          <div class="input-group">
+            <label>Espesor de pared (mm)</label>
+            <input type="number" id="norm-t" value="7.4" step="0.1">
+          </div>
+          <div class="input-group">
+            <label>Presión de diseño (MPa)</label>
+            <input type="number" id="norm-P" value="10" step="0.5">
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label>$\sigma_y$ — Límite elástico (MPa)</label>
+            <input type="number" id="norm-Sy" value="415" step="5">
+          </div>
+          <div class="input-group">
+            <label>$\sigma_{UTS}$ — Resistencia a tracción (MPa)</label>
+            <input type="number" id="norm-Su" value="520" step="5">
+          </div>
+          <div class="input-group">
+            <label>Grado API 5L</label>
+            <select id="norm-grade">
+              <option value="X42">X42</option>
+              <option value="X52">X52</option>
+              <option value="X60" selected>X60</option>
+              <option value="X65">X65</option>
+              <option value="X70">X70</option>
+              <option value="X80">X80</option>
+            </select>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-primary" onclick="evaluateASME()">Evaluar ASME B31.12</button>
+        </div>
+      </div>
+
+      <div class="card hidden" id="norm-results">
+        <h3 class="card-title">Resultado de la evaluación</h3>
+        <div id="norm-output"></div>
+      </div>
+    </section>
+
+    <!-- ── TAB 6: REPORTE ── -->
+    <section class="panel" id="tab-report">
+      <div class="panel-header">
+        <h2>Generador de reporte</h2>
+        <p class="panel-desc">Genera un reporte PDF consolidado con los resultados de todos los módulos.</p>
+      </div>
+
+      <div class="card">
+        <div class="status-box status-warning">
+          <strong>Módulo en desarrollo.</strong> Ejecuta primero los módulos de Composición, Simulación y Normativa para tener datos que incluir en el reporte.
+        </div>
+      </div>
+    </section>
+
+    <!-- ── TAB 7: CHATBOT ── -->
+    <section class="panel" id="tab-chatbot">
+      <div class="panel-header">
+        <h2>RINCÓN IA v2</h2>
+        <p class="panel-desc">Asistente inteligente de fragilización por hidrógeno, simulación DFT y cálculos metalúrgicos.</p>
+      </div>
+
+      <div class="card card-chat">
+        <div class="chat-messages" id="chat-messages">
+          <div class="chat-welcome">
+            <div class="chat-welcome-icon">H₂</div>
+            <p class="chat-welcome-title">RINCÓN IA v2</p>
+            <p class="chat-welcome-sub">Pregunta sobre fragilización por hidrógeno, mecanismos HEDE/HELP, simulación DFT, normativa ASME B31.12, o cualquier tema relacionado.</p>
+            <div class="chip-row">
+              <button class="chip" onclick="askChat(this.textContent)">¿Qué es la fragilización por hidrógeno?</button>
+              <button class="chip" onclick="askChat(this.textContent)">Explica el mecanismo HEDE</button>
+              <button class="chip" onclick="askChat(this.textContent)">Energías de trampa en α-Fe</button>
+              <button class="chip" onclick="askChat(this.textContent)">¿Qué dice ASME B31.12?</button>
+            </div>
+          </div>
+        </div>
+        <div class="chat-input-row">
+          <textarea id="chat-input" rows="1" placeholder="Pregunta sobre fragilización por hidrógeno..."
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"
+            oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+          <button class="btn btn-primary btn-send" onclick="sendChat()">➤</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ══════════ FOOTER ══════════ -->
+  <footer class="footer">
+    <p>HE-Lab v0.1.0 — J. Gabriel Franco Correa — UIS 2026</p>
+    <p>Metalurgia · Fragilización por Hidrógeno · Simulación Multiescala</p>
+  </footer>
+
+  <!-- ══════════ SCRIPTS ══════════ -->
+  <script src="js/composition.js"></script>
+  <script src="js/solver.js"></script>
+  <script src="js/normative.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
